@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import {
   Bar,
   CartesianGrid,
@@ -8,8 +10,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-import { useState } from "react";
 
 import type { DashboardActivity } from "../../../adapters/userAdapter";
 
@@ -27,7 +27,7 @@ type HeartRateData = {
   average: number;
 };
 
-function formatDate(date: string) {
+function formatAxisDate(date: string) {
   return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "2-digit",
@@ -49,19 +49,14 @@ function getHeartRateData(
         new Date(a.date).getTime() -
         new Date(b.date).getTime()
     )
-    .slice(-7)
     .map((activity) => ({
-      day: formatDate(activity.date),
+      day: formatAxisDate(activity.date),
       date: formatFullDate(activity.date),
       min: activity.minHeartRate,
       max: activity.maxHeartRate,
       average: activity.averageHeartRate,
     }));
 }
-
-/* =========================
-   TOOLTIP
-   ========================= */
 
 type TooltipProps = {
   active?: boolean;
@@ -99,10 +94,6 @@ function HeartRateTooltip({
   );
 }
 
-/* =========================
-   POINT BLEU
-   ========================= */
-
 type DotProps = {
   cx?: number;
   cy?: number;
@@ -118,21 +109,12 @@ function AverageDot({
     return null;
   }
 
-  /*
-   * La Line est normalement positionnée
-   * au centre du groupe des deux barres.
-   * On décale donc son point légèrement
-   * vers la droite pour le placer au-dessus
-   * de la barre Max.
-   */
   return (
     <circle
       cx={cx + 7}
       cy={cy}
       r={3}
-      fill={
-        isHovered ? "#0B23F4" : "#AAB5FF"
-      }
+      fill={isHovered ? "#0B23F4" : "#AAB5FF"}
     />
   );
 }
@@ -157,23 +139,24 @@ function ActiveAverageDot({
   );
 }
 
-/* =========================
-   GRAPH
-   ========================= */
-
 export function HeartRateChart({
   activities,
-} : HeartRateChartProps) {
+}: HeartRateChartProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   const data = getHeartRateData(activities);
 
-  const [isHovered, setIsHovered] = useState(false);
+  if (data.length === 0) {
+    return (
+      <div className="heart-rate-chart heart-rate-chart-empty">
+        <p>Aucune donnée sur cette période.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="heart-rate-chart">
-      <ResponsiveContainer
-        width="100%"
-        height="100%"
-      >
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={data}
           barGap={4}
@@ -186,11 +169,11 @@ export function HeartRateChart({
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-        <CartesianGrid
-          vertical={false}
-          strokeDasharray="3 3"
-          stroke="#EEEEEE"
-        />
+          <CartesianGrid
+            vertical={false}
+            strokeDasharray="3 3"
+            stroke="#EEEEEE"
+          />
 
           <XAxis
             dataKey="day"
@@ -205,7 +188,8 @@ export function HeartRateChart({
           />
 
           <YAxis
-            domain={["dataMin - 5", "dataMax + 5"]}
+            domain={[130, 185]}
+            ticks={[130, 145, 160, 175, 185]}
             tickLine={false}
             axisLine={false}
             tick={{
@@ -221,7 +205,6 @@ export function HeartRateChart({
             }}
           />
 
-          {/* Fréquence cardiaque minimale */}
           <Bar
             dataKey="min"
             fill="#FFC1B8"
@@ -229,7 +212,6 @@ export function HeartRateChart({
             radius={[6, 6, 6, 6]}
           />
 
-          {/* Fréquence cardiaque maximale */}
           <Bar
             dataKey="max"
             fill="#F4320B"
@@ -237,15 +219,12 @@ export function HeartRateChart({
             radius={[6, 6, 6, 6]}
           />
 
-          {/* Fréquence cardiaque moyenne */}
           <Line
             type="monotone"
             dataKey="average"
-            stroke={
-              isHovered ? "#0B23F4" : "#D7DCFF"
-            }
+            stroke={isHovered ? "#0B23F4" : "#D7DCFF"}
             strokeWidth={2}
-            dot={<AverageDot isHovered={isHovered}/>}
+            dot={<AverageDot isHovered={isHovered} />}
             activeDot={<ActiveAverageDot />}
           />
         </ComposedChart>

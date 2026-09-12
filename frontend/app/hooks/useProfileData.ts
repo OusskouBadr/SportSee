@@ -47,7 +47,9 @@ export function useProfileData() {
           )
         );
       } catch {
-        setError("Impossible de charger les données du profil.");
+        setError(
+          "Impossible de charger les données du profil."
+        );
       } finally {
         setIsLoading(false);
       }

@@ -65,7 +65,7 @@ export type ProfileUser = {
 export function adaptUserProfile(
   userInfo: UserInfo,
   activities: UserActivity[]
-  ) : ProfileUser {
+): ProfileUser {
   const totalCalories = activities.reduce(
     (total, activity) => total + activity.caloriesBurned,
     0
@@ -88,4 +88,3 @@ export function adaptUserProfile(
     totalCalories,
   };
 }
-

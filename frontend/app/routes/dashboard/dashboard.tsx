@@ -38,15 +38,16 @@ function formatPeriodDate(date: Date) {
 }
 
 /* =========================
-   PÉRIODE DU DISTANCE CHART
+   PÉRIODE DISTANCE
+   4 SEMAINES
    ========================= */
 
-function getDistancePeriodLabel(
+function getDistancePeriod(
   activities: { date: string }[],
   periodOffset: number
 ) {
   if (activities.length === 0) {
-    return "";
+    return null;
   }
 
   const sortedActivities = [...activities].sort(
@@ -65,28 +66,73 @@ function getDistancePeriodLabel(
   const currentWeekStart = new Date(latestDate);
 
   currentWeekStart.setDate(
-    latestDate.getDate() - daysSinceMonday
+    latestDate.getDate() -
+      daysSinceMonday +
+      periodOffset * 28
   );
 
-  currentWeekStart.setDate(
-    currentWeekStart.getDate() + periodOffset * 28
-  );
+  const start = new Date(currentWeekStart);
 
-  const periodStart = new Date(currentWeekStart);
-
-  periodStart.setDate(
+  start.setDate(
     currentWeekStart.getDate() - 21
   );
 
-  const periodEnd = new Date(currentWeekStart);
+  const end = new Date(currentWeekStart);
 
-  periodEnd.setDate(
+  end.setDate(
     currentWeekStart.getDate() + 6
   );
 
-  return `${formatPeriodDate(periodStart)} - ${formatPeriodDate(
-    periodEnd
-  )}`;
+  return {
+    start,
+    end,
+  };
+}
+
+/* =========================
+   PÉRIODE HEART RATE
+   1 SEMAINE
+   ========================= */
+
+function getHeartRatePeriod(
+  activities: { date: string }[],
+  periodOffset: number
+) {
+  if (activities.length === 0) {
+    return null;
+  }
+
+  const sortedActivities = [...activities].sort(
+    (a, b) =>
+      new Date(a.date).getTime() -
+      new Date(b.date).getTime()
+  );
+
+  const latestDate = new Date(
+    `${sortedActivities[sortedActivities.length - 1].date}T12:00:00`
+  );
+
+  const daysSinceMonday =
+    (latestDate.getDay() + 6) % 7;
+
+  const currentWeekStart = new Date(latestDate);
+
+  currentWeekStart.setDate(
+    latestDate.getDate() -
+      daysSinceMonday +
+      periodOffset * 28
+  );
+
+  const start = new Date(currentWeekStart);
+  start.setDate(currentWeekStart.getDate() - 21);
+
+  const end = new Date(currentWeekStart);
+  end.setDate(currentWeekStart.getDate() + 6);
+
+  return {
+    start,
+    end,
+  };
 }
 
 /* =========================
@@ -101,9 +147,19 @@ export default function Dashboard() {
     error,
   } = useDashboardData();
 
+  /*
+   * IMPORTANT :
+   * Les hooks restent toujours AVANT les return
+   * conditionnels.
+   */
   const [
     distancePeriodOffset,
     setDistancePeriodOffset,
+  ] = useState(0);
+
+  const [
+    heartRatePeriodOffset,
+    setHeartRatePeriodOffset,
   ] = useState(0);
 
   /* =========================
@@ -150,64 +206,109 @@ export default function Dashboard() {
   }
 
   /* =========================
-     PÉRIODES
+     PÉRIODE DISTANCE
      ========================= */
 
-  const distancePeriod =
-    getDistancePeriodLabel(
+  const distanceDates =
+    getDistancePeriod(
       activities,
       distancePeriodOffset
     );
 
-  const firstActivity = activities[0];
-
-  const lastActivity =
-    activities[activities.length - 1];
-
-  const heartRatePeriod =
-    firstActivity && lastActivity
+  const distancePeriod =
+    distanceDates
       ? `${formatPeriodDate(
-          new Date(
-            `${firstActivity.date}T12:00:00`
-          )
+          distanceDates.start
         )} - ${formatPeriodDate(
-          new Date(
-            `${lastActivity.date}T12:00:00`
-          )
+          distanceDates.end
         )}`
       : "";
 
-  /* =========================
-     MOYENNES
-     ========================= */
+  const visibleDistanceActivities =
+    distanceDates
+      ? activities.filter((activity) => {
+          const activityDate = new Date(
+            `${activity.date}T12:00:00`
+          );
+
+          return (
+            activityDate >=
+              distanceDates.start &&
+            activityDate <=
+              distanceDates.end
+          );
+        })
+      : [];
 
   const averageDistance =
-    activities.length > 0
-      ? activities.reduce(
+    visibleDistanceActivities.length > 0
+      ? visibleDistanceActivities.reduce(
           (total, activity) =>
             total + activity.distance,
           0
-        ) / activities.length
+        ) /
+        visibleDistanceActivities.length
       : 0;
 
+  /* =========================
+     PÉRIODE HEART RATE
+     ========================= */
+
+  const heartRateDates =
+      getHeartRatePeriod(
+      activities,
+      heartRatePeriodOffset
+    );
+
+  const heartRatePeriod =
+    heartRateDates
+      ? `${formatPeriodDate(
+          heartRateDates.start
+        )} - ${formatPeriodDate(
+          heartRateDates.end
+        )}`
+      : "";
+
+  const visibleHeartRateActivities =
+    heartRateDates
+      ? activities.filter((activity) => {
+          const activityDate = new Date(
+            `${activity.date}T12:00:00`
+          );
+
+          return (
+            activityDate >= heartRateDates.start &&
+            activityDate <= heartRateDates.end
+          );
+        })
+      : [];
+
   const averageHeartRate =
-    activities.length > 0
-      ? activities.reduce(
+    visibleHeartRateActivities.length > 0
+      ? visibleHeartRateActivities.reduce(
           (total, activity) =>
-            total +
-            activity.averageHeartRate,
+            total + activity.averageHeartRate,
           0
-        ) / activities.length
+        ) / visibleHeartRateActivities.length
       : 0;
 
   /* =========================
      DERNIÈRE SEMAINE
      ========================= */
 
-  const latestActivity =
-    activities.at(-1);
+  const sortedActivities = [
+    ...activities,
+  ].sort(
+    (a, b) =>
+      new Date(a.date).getTime() -
+      new Date(b.date).getTime()
+  );
 
-  let weekActivities = activities;
+  const latestActivity =
+    sortedActivities.at(-1);
+
+  let weekActivities =
+    sortedActivities;
 
   let weekLabel =
     "Aucune activité disponible";
@@ -220,31 +321,37 @@ export default function Dashboard() {
     const daysSinceMonday =
       (latestDate.getDay() + 6) % 7;
 
-    const weekStart = new Date(latestDate);
+    const weekStart = new Date(
+      latestDate
+    );
 
     weekStart.setDate(
       latestDate.getDate() -
         daysSinceMonday
     );
 
-    const weekEnd = new Date(weekStart);
+    const weekEnd = new Date(
+      weekStart
+    );
 
     weekEnd.setDate(
       weekStart.getDate() + 6
     );
 
-    weekActivities = activities.filter(
-      (activity) => {
-        const activityDate = new Date(
-          `${activity.date}T12:00:00`
-        );
+    weekActivities =
+      sortedActivities.filter(
+        (activity) => {
+          const activityDate =
+            new Date(
+              `${activity.date}T12:00:00`
+            );
 
-        return (
-          activityDate >= weekStart &&
-          activityDate <= weekEnd
-        );
-      }
-    );
+          return (
+            activityDate >= weekStart &&
+            activityDate <= weekEnd
+          );
+        }
+      );
 
     weekLabel = `Du ${formatDate(
       weekStart
@@ -266,10 +373,11 @@ export default function Dashboard() {
     );
 
   /*
-   * L'objectif hebdomadaire n'est pas fourni
-   * par l'endpoint actuel.
+   * L'objectif hebdomadaire n'est pas
+   * fourni par l'endpoint actuel.
    *
-   * Ces valeurs reproduisent donc la maquette.
+   * Ces deux valeurs reproduisent
+   * la maquette Figma.
    */
   const weeklyGoal = 6;
   const weeklyCompleted = 4;
@@ -330,7 +438,7 @@ export default function Dashboard() {
           </section>
 
           {/* =========================
-              PERFORMANCES
+              DERNIÈRES PERFORMANCES
               ========================= */}
 
           <section className="dashboard-performance-section">
@@ -339,16 +447,20 @@ export default function Dashboard() {
             </h2>
 
             <div className="dashboard-charts-grid">
-              {/* DISTANCE */}
+              {/* =====================
+                  DISTANCE
+                  ===================== */}
 
               <article className="dashboard-chart-card">
                 <div className="dashboard-chart-header">
                   <div>
                     <strong className="dashboard-distance-average">
-                      {averageDistance.toFixed(
-                        1
-                      )}{" "}
-                      km en moyenne
+                      {visibleDistanceActivities.length >
+                      0
+                        ? `${averageDistance.toFixed(
+                            1
+                          )} km en moyenne`
+                        : "— km en moyenne"}
                     </strong>
 
                     <p>
@@ -398,18 +510,18 @@ export default function Dashboard() {
                 />
               </article>
 
-              {/* FRÉQUENCE CARDIAQUE */}
+              {/* =====================
+                  HEART RATE
+                  ===================== */}
 
               <article className="dashboard-chart-card">
                 <div className="dashboard-chart-header">
                   <div>
                     <strong className="dashboard-heart-average">
-                      {Math.round(
-                        averageHeartRate
-                      )}{" "}
-                      BPM
+                      {visibleHeartRateActivities.length > 0
+                        ? `${Math.round(averageHeartRate)} BPM`
+                        : "— BPM"}
                     </strong>
-
                     <p>
                       Fréquence cardiaque
                       moyenne
@@ -419,7 +531,13 @@ export default function Dashboard() {
                   <div className="dashboard-period">
                     <button
                       type="button"
-                      aria-label="Période précédente"
+                      aria-label="Semaine précédente"
+                      onClick={() =>
+                        setHeartRatePeriodOffset(
+                          (current) =>
+                            current - 1
+                        )
+                      }
                     >
                       ‹
                     </button>
@@ -430,7 +548,13 @@ export default function Dashboard() {
 
                     <button
                       type="button"
-                      aria-label="Période suivante"
+                      aria-label="Semaine suivante"
+                      onClick={() =>
+                        setHeartRatePeriodOffset(
+                          (current) =>
+                            current + 1
+                        )
+                      }
                     >
                       ›
                     </button>
@@ -438,7 +562,7 @@ export default function Dashboard() {
                 </div>
 
                 <HeartRateChart
-                  activities={activities}
+                  activities={visibleHeartRateActivities}
                 />
 
                 <div className="dashboard-heart-legend">
@@ -473,7 +597,9 @@ export default function Dashboard() {
             </div>
 
             <div className="dashboard-week-grid">
-              {/* OBJECTIF HEBDOMADAIRE */}
+              {/* =====================
+                  OBJECTIF
+                  ===================== */}
 
               <article className="dashboard-goal-card">
                 <div className="dashboard-goal-heading">
@@ -503,7 +629,9 @@ export default function Dashboard() {
                 />
               </article>
 
-              {/* STATISTIQUES SEMAINE */}
+              {/* =====================
+                  STATS SEMAINE
+                  ===================== */}
 
               <div className="dashboard-week-stats">
                 <article className="dashboard-stat-card">
@@ -524,7 +652,9 @@ export default function Dashboard() {
                 </article>
 
                 <article className="dashboard-stat-card dashboard-stat-card-distance">
-                  <span>Distance</span>
+                  <span>
+                    Distance
+                  </span>
 
                   <div>
                     <strong>

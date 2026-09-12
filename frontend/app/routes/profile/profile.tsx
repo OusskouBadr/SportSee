@@ -72,11 +72,13 @@ export default function Profile() {
             <div className="profile-left-column">
 
               <section className="profile-user-card">
-                <img
-                  src={user.profilePicture}
-                  alt={user.fullName}
-                  className="profile-picture"
-                />
+                <div className="profile-picture-wrapper">
+                  <img
+                    src={user.profilePicture}
+                    alt={user.fullName}
+                    className="profile-picture"
+                  />
+                </div>
 
                 <div>
                   <h1>{user.fullName}</h1>
@@ -117,9 +119,7 @@ export default function Profile() {
                   depuis le {formatMemberSince(user.createdAt)}
                 </p>
               </div>
-
               <div className="profile-statistics-grid">
-
                 <article className="profile-stat-card">
                   <span>Temps total couru</span>
 
@@ -130,8 +130,8 @@ export default function Profile() {
                       <small>{duration.minutes}min</small>
                     )}
                   </div>
-                  
                 </article>
+
                 <article className="profile-stat-card">
                   <span>Calories brûlées</span>
 
@@ -145,10 +145,7 @@ export default function Profile() {
                   <span>Distance totale parcourue</span>
 
                   <div>
-                    <strong>
-                      {Math.round(user.totalDistance)}
-                    </strong>
-
+                    <strong>{Math.round(user.totalDistance)}</strong>
                     <small> km</small>
                   </div>
                 </article>
@@ -161,7 +158,6 @@ export default function Profile() {
                     <small> sessions</small>
                   </div>
                 </article>
-
               </div>
             </section>
 

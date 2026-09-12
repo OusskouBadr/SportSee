@@ -4,6 +4,15 @@
   margin-top: 30px;
 }
 
+.heart-rate-chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #888888;
+  font-size: 12px;
+}
+
 .heart-tooltip {
   min-width: 125px;
   padding: 12px 14px;
