@@ -8,7 +8,7 @@ export const mockUserInfo: UserInfo  = {
     age: 32,
     weight: 60,
     height: 165,
-    profilePicture: "http://localhost:8000/images/sophie.jpg",
+    profilePicture: "/images/profile-picture.png",
   },
   statistics: {
     totalDistance: "2250.2",

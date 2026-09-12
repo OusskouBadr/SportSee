@@ -1,0 +1,32 @@
+.heart-rate-chart {
+  width: 100%;
+  height: 250px;
+  margin-top: 30px;
+}
+
+.heart-tooltip {
+  min-width: 125px;
+  padding: 12px 14px;
+
+  background: #111111;
+  color: #ffffff;
+
+  border-radius: 9px;
+
+  font-size: 11px;
+}
+
+.heart-tooltip > span {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #cccccc;
+}
+
+.heart-tooltip p {
+  margin: 4px 0;
+}
+
+.heart-tooltip strong {
+  font-weight: 500;
+}

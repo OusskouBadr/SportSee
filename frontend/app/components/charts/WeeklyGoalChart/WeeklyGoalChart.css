@@ -1,0 +1,61 @@
+.weekly-goal-chart-wrapper {
+  position: relative;
+
+  width: 270px;
+  height: 190px;
+
+  margin: 12px auto 0;
+}
+
+.weekly-goal-chart {
+  position: absolute;
+
+  width: 170px;
+  height: 170px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+}
+
+.weekly-goal-remaining,
+.weekly-goal-completed {
+  position: absolute;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  color: #777777;
+  font-size: 10px;
+
+  z-index: 2;
+}
+
+.weekly-goal-remaining {
+  top: 24px;
+  right: 0;
+}
+
+.weekly-goal-completed {
+  bottom: 25px;
+  left: 0;
+}
+
+.weekly-dot {
+  width: 7px;
+  height: 7px;
+
+  display: inline-block;
+
+  border-radius: 50%;
+}
+
+.weekly-dot-completed {
+  background: #0b23f4;
+}
+
+.weekly-dot-remaining {
+  background: #aab5ff;
+}

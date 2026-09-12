@@ -1,0 +1,210 @@
+.profile-page {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #f4f5ff;
+  color: #111111;
+}
+
+.profile-main {
+  flex: 1;
+
+  width: min(1180px, calc(100% - 80px));
+
+  margin: 0 auto;
+  padding: 70px 0 90px;
+
+  box-sizing: border-box;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 430px 1fr;
+
+  gap: 48px;
+
+  align-items: start;
+}
+
+/* ======================
+   COLONNE GAUCHE
+   ====================== */
+
+.profile-left-column {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+/* Carte identité */
+
+.profile-user-card {
+  min-height: 130px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 24px;
+
+  padding: 24px 28px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+  border-radius: 14px;
+}
+
+.profile-picture {
+  width: 84px;
+  height: 84px;
+
+  flex-shrink: 0;
+
+  object-fit: cover;
+
+  border-radius: 10px;
+}
+
+.profile-user-card h1 {
+  margin: 0 0 6px;
+
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.profile-user-card p {
+  margin: 0;
+
+  color: #777777;
+
+  font-size: 12px;
+}
+
+/* Votre profil */
+
+.profile-details-card {
+  min-height: 265px;
+
+  padding: 28px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+}
+
+.profile-details-card h2 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.profile-separator {
+  height: 1px;
+
+  margin: 20px 0 22px;
+
+  background: #eeeeee;
+}
+
+.profile-details-card p {
+  margin: 0 0 18px;
+
+  color: #777777;
+
+  font-size: 13px;
+}
+
+.profile-details-card span {
+  color: #555555;
+}
+
+/* ======================
+   STATISTIQUES
+   ====================== */
+
+.profile-statistics {
+  padding-top: 4px;
+}
+
+.profile-statistics-title {
+  margin-bottom: 28px;
+}
+
+.profile-statistics-title h2 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.profile-statistics-title p {
+  margin: 4px 0 0;
+
+  color: #888888;
+
+  font-size: 12px;
+}
+
+.profile-statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+.profile-stat-card {
+  min-height: 105px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 24px 28px;
+
+  box-sizing: border-box;
+
+  background: #0b23f4;
+  color: #ffffff;
+
+  border-radius: 10px;
+}
+
+.profile-stat-card > span {
+  margin-bottom: 14px;
+
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.profile-stat-card strong {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.profile-stat-card small {
+  margin-left: 3px;
+
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* ======================
+   1024px
+   ====================== */
+
+@media (max-width: 1100px) {
+  .profile-main {
+    width: calc(100% - 48px);
+  }
+
+  .profile-layout {
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+  }
+}

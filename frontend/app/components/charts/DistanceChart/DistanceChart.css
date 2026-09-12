@@ -1,0 +1,55 @@
+.distance-chart {
+  width: 100%;
+  margin-top: 30px;
+}
+
+.distance-chart-container {
+  width: 100%;
+  height: 250px;
+}
+
+.distance-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  padding: 14px 16px;
+
+  background: #111111;
+  color: #ffffff;
+
+  border-radius: 9px;
+
+  font-size: 11px;
+}
+
+.distance-tooltip span {
+  color: #cccccc;
+}
+
+.distance-tooltip strong {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.distance-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-top: 8px;
+
+  color: #777777;
+  font-size: 10px;
+}
+
+.distance-chart-legend-dot {
+  width: 7px;
+  height: 7px;
+
+  display: inline-block;
+
+  background: #aab5ff;
+  border-radius: 50%;
+}

@@ -1,25 +1,26 @@
 import { NavLink, useNavigate } from "react-router";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
+
+import "./Header.css";
 
 export function Header() {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Appelle la fonction dans AuthContext ( remove token et userid localstorage )
     logout();
-    // ramène immédiatement l'utilisateur au login
     navigate("/login", { replace: true });
   };
 
   return (
-    <header>
+    <header className="app-header">
       <img
         src="/icons/sportsee-logo.svg"
         alt="SportSee"
+        className="app-header-logo"
       />
 
-      <nav>
+      <nav className="app-header-nav">
         <NavLink to="/dashboard">
           Dashboard
         </NavLink>
@@ -28,7 +29,10 @@ export function Header() {
           Mon profil
         </NavLink>
 
-        <button type="button" onClick={handleLogout}>
+        <button
+          type="button"
+          onClick={handleLogout}
+        >
           Se déconnecter
         </button>
       </nav>
