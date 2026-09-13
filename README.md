@@ -31,12 +31,20 @@ L'application permet à un utilisateur de se connecter, consulter son tableau de
 - Fetch API
 - CSS
 
+cd frontend
+npm install
+npm run dev
+
 ### Backend
 
 - Node.js
 - API REST
 - JWT
 - Docker
+
+cd backend
+npm install
+npm start
 
 ## Architecture frontend
 
@@ -54,12 +62,3 @@ Adapters
 Composants React
  ↓
 Recharts
-
-## Installation
-
-### Backend
-
-```bash
-cd backend
-npm install
-npm start
