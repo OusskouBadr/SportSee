@@ -3,15 +3,15 @@ const jwt = require("jsonwebtoken");
 
 const users = require("./data.json");
 
-const SECRET_KEY = "your-secret-key-12345"; // In a real app, this would be in environment variables
+const { authenticateToken, generateToken } = require("./middleware");
+
+const SECRET_KEY = "your-secret-key-12345";
+
+const router = express.Router();
 
 const getUserById = (userId) => {
   return users.find((user) => user.id === userId);
 };
-
-const router = express.Router();
-
-const { authenticateToken, generateToken } = require("./middleware");
 
 /**
  * POST /api/login
@@ -47,7 +47,12 @@ router.post("/api/login", (req, res) => {
 router.get("/api/user-info", authenticateToken, (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decodedToken = jwt.verify(token, SECRET_KEY);
+
   const user = getUserById(decodedToken.userId);
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
 
   const runningData = user.runningData;
 
@@ -101,13 +106,11 @@ router.get("/api/user-activity", authenticateToken, (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-  const runningData = user.runningData;
-
   const startDate = new Date(startWeek);
   const endDate = new Date(endWeek);
   const now = new Date();
 
-  const filteredSessions = runningData.filter((session) => {
+  const filteredSessions = user.runningData.filter((session) => {
     const sessionDate = new Date(session.date);
 
     return (
@@ -128,10 +131,6 @@ router.get("/api/user-activity", authenticateToken, (req, res) => {
  * POST /api/training-plan
  * Generates a personalized 6-week training plan with Mistral AI
  */
-/**
- * POST /api/training-plan
- * Generates a personalized 6-week training plan with Mistral AI
- */
 router.post("/api/training-plan", authenticateToken, async (req, res) => {
   try {
     if (!process.env.MISTRAL_API_KEY) {
@@ -141,15 +140,6 @@ router.post("/api/training-plan", authenticateToken, async (req, res) => {
     }
 
     const { objective, availability } = req.body;
-
-    const availableDays =
-      availability.match(
-        /lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche/gi
-      ) || [];
-
-    const normalizedAvailableDays = availableDays.map(
-      (day) => day.charAt(0).toUpperCase() + day.slice(1).toLowerCase()
-    );
 
     if (!objective || !availability) {
       return res.status(400).json({
@@ -165,7 +155,28 @@ router.post("/api/training-plan", authenticateToken, async (req, res) => {
       });
     }
 
+    const availableDays =
+      availability.match(
+        /lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche/gi
+      ) || [];
+
+    const normalizedAvailableDays = availableDays.map(
+      (day) => day.charAt(0).toUpperCase() + day.slice(1).toLowerCase()
+    );
+
+    if (normalizedAvailableDays.length === 0) {
+      return res.status(400).json({
+        message: "No valid availability day found",
+      });
+    }
+
     const recentSessions = user.runningData.slice(-6);
+
+    if (recentSessions.length === 0) {
+      return res.status(400).json({
+        message: "Not enough activity data to generate a training plan",
+      });
+    }
 
     const maxObservedHeartRate = Math.max(
       ...recentSessions.map((session) => session.heartRate.max)
@@ -205,9 +216,9 @@ router.post("/api/training-plan", authenticateToken, async (req, res) => {
 
     const prompt = `
 Crée un plan personnalisé couvrant exactement les 6 prochaines semaines.
-Adapte ces 6 semaines à l'échéance précisée dans l'objectif de l'utilisateur.
+Adapte ces 6 semaines à l'échéance indiquée dans l'objectif de l'utilisateur.
 
-OBJECTIF DE L'UTILISATEUR
+OBJECTIF
 ${objective}
 
 JOURS DISPONIBLES
@@ -230,37 +241,23 @@ DONNÉES CALCULÉES
 
 RÈGLES OBLIGATOIRES
 - Le programme couvre exactement 6 semaines.
-- Ces 6 semaines constituent la prochaine étape vers l'objectif, même si l'objectif final est prévu dans plus de 6 semaines.
-- Utilise uniquement les jours indiqués dans JOURS DISPONIBLES.
-- Prévois une séance pour chaque jour disponible, sauf si une journée de récupération est nécessaire : dans ce cas indique explicitement "Repos".
-- N'ajoute aucun autre jour.
-- Affiche toutes les semaines de 1 à 6. Ne résume et n'omets aucune semaine.
-- La progression doit être adaptée aux performances récentes.
-- Évite les augmentations brutales de distance.
-- Ne dépasse jamais ${maxObservedHeartRate} BPM dans les recommandations.
-- Ne présente jamais une fréquence cardiaque calculée ou inventée comme une donnée utilisateur.
-- La semaine 6 doit être plus légère que les semaines précédentes.
-- Les conseils alimentaires doivent rester simples, généraux et prudents.
-- N'invente aucune blessure, pathologie ou donnée médicale.
-- Si l'objectif est trop éloigné pour être préparé entièrement en 6 semaines, indique que ce programme représente uniquement les 6 premières semaines de préparation.
-- Les allures recommandées doivent rester cohérentes avec l'allure moyenne observée de ${averagePaceText}.
-- N'invente pas d'allure arbitrairement beaucoup plus lente ou beaucoup plus rapide que l'historique.
-- N'utilise jamais un pourcentage de fréquence cardiaque maximale théorique.
-- Si tu proposes une zone de fréquence cardiaque, base-toi uniquement sur les valeurs réellement observées.
 - Utilise exactement les jours suivants : ${normalizedAvailableDays.join(", ")}.
-- Chaque semaine doit contenir exactement ${normalizedAvailableDays.length} entrées, une pour chacun de ces jours.
-- N'ajoute aucun autre jour.
-- N'oublie aucun des jours disponibles.
-- Respecte l'ordre des jours fournis.
-- Si une séance doit être remplacée par du repos pour éviter une surcharge, affiche quand même ce jour et indique explicitement "Repos".
-- Le programme doit toujours couvrir exactement 6 semaines.
-- Analyse la durée indiquée dans l'objectif utilisateur.
-- Si l'événement sportif a lieu avant la fin des 6 semaines, adapte le programme à cette échéance.
-- Les semaines avant l'événement servent à la préparation.
-- La semaine contenant l'événement doit réduire la charge avant la course.
-- Les semaines situées après l'événement doivent être consacrées à la récupération puis à une reprise progressive.
-- Ne continue jamais à présenter les semaines après la date de l'événement comme des semaines de préparation à cette course.
-- Si l'objectif se situe au-delà de 6 semaines, indique que le programme représente les 6 premières semaines de préparation.
+- Chaque semaine doit contenir exactement ${normalizedAvailableDays.length} entrées.
+- N'ajoute et n'oublie aucun jour.
+- Si une séance doit être remplacée pour éviter une surcharge, affiche ce jour avec "Repos".
+- Affiche toutes les semaines de 1 à 6 sans en résumer ni en omettre.
+- Adapte la progression aux performances récentes.
+- Évite les augmentations brutales de distance ou d'intensité.
+- Les allures doivent rester cohérentes avec l'allure moyenne observée de ${averagePaceText}.
+- Ne recommande jamais une fréquence cardiaque supérieure à ${maxObservedHeartRate} BPM.
+- N'utilise jamais un pourcentage de fréquence cardiaque maximale théorique.
+- Si tu proposes une zone cardiaque, base-toi uniquement sur les valeurs observées.
+- N'invente aucune blessure, pathologie ou donnée médicale.
+- Les conseils alimentaires doivent rester simples, généraux et prudents.
+- Analyse l'échéance mentionnée dans l'objectif.
+- Si l'événement a lieu pendant les 6 semaines, réduis la charge avant l'événement puis prévois récupération et reprise progressive après celui-ci.
+- Si l'objectif est situé au-delà des 6 semaines, précise que le programme représente les 6 premières semaines de préparation.
+- La semaine 6 doit être plus légère si elle se situe encore avant l'événement.
 
 FORMAT OBLIGATOIRE
 
@@ -269,11 +266,11 @@ FORMAT OBLIGATOIRE
 - Jour : type de séance | distance ou durée | allure/intensité
 Conseil : une phrase courte.
 
-Répète exactement cette structure jusqu'à :
+Répète cette structure jusqu'à :
 
 ### Semaine 6
 
-Puis termine par une section très courte :
+Puis termine par :
 
 ### Remarque
 Une ou deux phrases maximum.
@@ -295,7 +292,7 @@ Une ou deux phrases maximum.
             {
               role: "system",
               content:
-                "Tu es l'assistant SportSee. Tu construis des plans de course prudents et tu respectes strictement toutes les contraintes fournies. Tu ne dois jamais omettre une semaine demandée ni inventer de données utilisateur.",
+                "Tu es l'assistant SportSee spécialisé dans la création prudente de plans de course à pied. Respecte strictement les contraintes fournies et n'invente aucune donnée utilisateur.",
             },
             {
               role: "user",
@@ -317,8 +314,16 @@ Une ou deux phrases maximum.
 
     const data = await mistralResponse.json();
 
+    const trainingPlan = data.choices?.[0]?.message?.content;
+
+    if (!trainingPlan) {
+      return res.status(502).json({
+        message: "Invalid response from Mistral API",
+      });
+    }
+
     return res.json({
-      trainingPlan: data.choices[0].message.content,
+      trainingPlan,
     });
   } catch (error) {
     console.error("Training plan error:", error);
