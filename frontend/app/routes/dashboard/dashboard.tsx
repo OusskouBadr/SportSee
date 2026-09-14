@@ -9,6 +9,7 @@ import { HeartRateChart } from "../../components/charts/HeartRateChart/HeartRate
 import { WeeklyGoalChart } from "../../components/charts/WeeklyGoalChart/WeeklyGoalChart";
 
 import { useDashboardData } from "../../hooks/useDashboardData";
+import TrainingPlan from "../../components/ai/TrainingPlan/TrainingPlan";
 
 import "./dashboard.css";
 
@@ -672,6 +673,7 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
+          <TrainingPlan />
         </main>
 
         <Footer />

@@ -1,0 +1,104 @@
+.training-plan {
+  margin-top: 32px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 24px;
+}
+
+.training-plan-header {
+  margin-bottom: 20px;
+}
+
+.training-plan-label {
+  margin: 0 0 4px;
+  color: #0b23f4;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.training-plan h2,
+.training-plan h3 {
+  margin: 0;
+}
+
+.training-plan-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.training-plan-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.training-plan-form input {
+  padding: 12px 14px;
+  border: 1px solid #dfe2f2;
+  border-radius: 12px;
+  font: inherit;
+}
+
+.training-plan-form button {
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: #0b23f4;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.training-plan-form button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.training-plan-error {
+  margin-top: 16px;
+  color: #c62828;
+}
+
+.training-plan-result {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #eceef8;
+}
+
+.training-plan-result {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #eceef8;
+  line-height: 1.6;
+}
+
+.training-plan-result h3 {
+  margin-bottom: 20px;
+}
+
+.training-plan-result h4 {
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.training-plan-result p {
+  margin: 8px 0;
+}
+
+.training-plan-result ul {
+  padding-left: 20px;
+}
+
+.training-plan-result hr {
+  border: 0;
+  border-top: 1px solid #eceef8;
+  margin: 24px 0;
+}
+
+.training-plan-result h3,
+.training-plan-result h4 {
+  margin-top: 24px;
+}
