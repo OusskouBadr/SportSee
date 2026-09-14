@@ -109,3 +109,25 @@ Pour une intégration réelle dans l'application, il faudra principalement :
 - gérer les erreurs, quotas et coûts de l'API.
 
 Une première version fonctionnelle pourrait être développée en quelques jours, puis améliorée progressivement grâce aux retours utilisateurs et à l'amélioration des prompts.
+
+## Intégration dans SportSee
+
+Le prototype a ensuite été intégré à l'application SportSee.
+
+Le frontend envoie l'objectif et les disponibilités de l'utilisateur au backend via :
+
+`POST /api/training-plan`
+
+Le backend récupère les données sportives de l'utilisateur connecté, construit le prompt puis appelle l'API Mistral.
+
+La clé Mistral est stockée dans un fichier `.env` côté backend afin de ne jamais être exposée dans le frontend.
+
+Le plan généré est ensuite renvoyé à React et affiché directement dans le dashboard.
+
+Plusieurs tests avec des objectifs et disponibilités différents ont montré que le résultat dépend fortement de la précision du prompt. Des contraintes supplémentaires ont donc été ajoutées pour mieux respecter les jours disponibles, les fréquences cardiaques et les performances récentes.
+
+## Conclusion
+
+Le prototype confirme que l'intégration de Mistral dans SportSee est techniquement réalisable.
+
+L'IA permet de générer un plan personnalisé à partir des données sportives de l'utilisateur, mais les résultats doivent rester encadrés par des prompts précis et des contrôles côté application.
